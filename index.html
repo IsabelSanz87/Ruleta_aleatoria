@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#f6f1e8"><meta name="description" content="Una ruleta con treinta temas de Grecia y Roma."><title>Ruleta clásica</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%2215%22%20fill%3D%22%23843f35%22/%3E%3Cpath%20d%3D%22M16%202v28M2%2016h28M6%206l20%2020M6%2026L26%206%22%20stroke%3D%22%23d7b87b%22%20stroke-width%3D%222%22/%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%224%22%20fill%3D%22%23f6f1e8%22/%3E%3C/svg%3E"><style>      body { margin:0; background:#f6f1e8; color:#302b28; font-family:Georgia,serif; }
+      .ruleta { max-width:780px; margin:0 auto; text-align:center; padding:20px 12px; }
+      h1 { font-size:32px; margin:0 0 12px; font-weight:normal; }
+      .rueda { position:relative; width:min(100%,620px); margin:auto; }
+      canvas { width:100%; height:auto; display:block; }
+      .puntero { position:absolute; top:0; left:50%; transform:translateX(-50%);
+        width:0; height:0; border-left:13px solid transparent;
+        border-right:13px solid transparent; border-top:28px solid #302b28; z-index:1; }
+      button { background:#843f35; color:white; border:0; border-radius:28px;
+        padding:12px 38px; font:18px Georgia,serif; cursor:pointer; margin:12px 0; }
+      button:disabled { opacity:.65; cursor:wait; }
+      button:focus-visible { outline:3px solid #302b28; outline-offset:4px; }
+      #resultado { min-height:86px; }
+      #tema { font-size:27px; margin:5px 0; }
+      #pregunta { font:18px/1.45 Georgia,serif; max-width:580px; margin:0 auto; }
+      @media(max-width:480px) { h1 {font-size:27px;} #tema {font-size:24px;} }
+*{box-sizing:border-box}html{min-height:100%}body{min-height:100svh}.ruleta{padding-top:max(18px,env(safe-area-inset-top));padding-bottom:max(22px,env(safe-area-inset-bottom))}
+#titulo{font:inherit;color:inherit;background:none;padding:4px 10px;margin:0;border-radius:4px;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+button{touch-action:manipulation;min-height:48px}#girar{min-width:168px}#pregunta{padding:0 10px}#tema{overflow-wrap:anywhere}
+dialog{width:min(92vw,440px);max-height:85svh;overflow:auto;border:1px solid #d7b87b;border-radius:16px;padding:24px;background:#f6f1e8;color:#302b28;font:18px/1.4 Georgia,serif}
+dialog::backdrop{background:#302b2877}dialog h2{font-size:24px;font-weight:normal;margin:0 0 18px}label{display:block;margin-bottom:8px}select{display:block;width:100%;font:18px Georgia,serif;padding:12px;background:white;border:1px solid #95877a;border-radius:8px;color:#302b28}dialog p{font-size:16px}dialog button{width:100%;margin-bottom:0}
+@media(max-width:480px){.ruleta{padding-left:4px;padding-right:4px}h1{margin-bottom:6px}.rueda{width:100%}#pregunta{font-size:18px}}
+</style></head><body><main class="ruleta"><h1><button id="titulo" type="button">Ruleta clásica</button></h1><div class="rueda"><div class="puntero" aria-hidden="true"></div><canvas id="rueda" width="1440" height="1440" role="img" aria-label="Ruleta con treinta temas de Grecia y Roma"></canvas></div><button id="girar" type="button">Girar</button><div id="resultado" aria-live="polite"><div id="tema"></div><p id="pregunta"></p></div></main>
+<dialog id="ajustes" aria-labelledby="ajustes-titulo"><h2 id="ajustes-titulo">Preparar el giro</h2><form method="dialog" id="config"><label for="seleccion">Tema</label><select id="seleccion"></select><p>Se guarda en este navegador. Cierra este panel antes de grabar.</p><button type="submit">Guardar y cerrar</button></form></dialog><script>
+const temas = [{"nombre": "νόμος / φύσις", "pregunta": "¿Lo justo viene de la naturaleza o de lo que acordamos?"}, {"nombre": "χρόνος / καιρός", "pregunta": "¿Qué diferencia hay entre el tiempo y el momento oportuno?"}, {"nombre": "κλέος / νόστος", "pregunta": "Aquiles y Odiseo. ¿La gloria o el regreso a casa?"}, {"nombre": "τιμή / κλέος", "pregunta": "¿Qué diferencia hay entre el honor que recibes y la fama que sobrevive?"}, {"nombre": "βία / μῆτις", "pregunta": "¿Cómo se enfrentan la fuerza y la astucia en el episodio del cíclope?"}, {"nombre": "αἰδώς / αἰσχύνη", "pregunta": "¿Cómo hablar de vergüenza en griego sin reducirla a una sola emoción?"}, {"nombre": "ἀταραξία / ἀπάθεια", "pregunta": "¿Qué buscaban epicúreos y estoicos al hablar de tranquilidad y pasiones?"}, {"nombre": "πόλεμος / στάσις", "pregunta": "¿Por qué la lucha dentro de la ciudad tenía su propio nombre?"}, {"nombre": "Otium / negotium", "pregunta": "¿Qué hacía un romano cuando se dedicaba al otium?"}, {"nombre": "Auctoritas / potestas", "pregunta": "¿Cómo distinguía Augusto su influencia de sus poderes oficiales?"}, {"nombre": "μίασμα", "pregunta": "¿Por qué la muerte de Layo contamina a Tebas en Edipo rey?"}, {"nombre": "ἄτη", "pregunta": "¿Cómo explica Agamenón su error recurriendo a Átē?"}, {"nombre": "ὕβρις", "pregunta": "¿Por qué traducir hýbris como orgullo se queda corto?"}, {"nombre": "φθόνος", "pregunta": "¿Por qué Solón habla de la envidia de los dioses en Heródoto?"}, {"nombre": "ἱκετεία", "pregunta": "¿Qué significaba abrazarse a las rodillas de alguien para suplicarle?"}, {"nombre": "ξενία", "pregunta": "¿Por qué Diomedes y Glauco dejan de luchar al reconocerse?"}, {"nombre": "μοῖρα / ἀνάγκη", "pregunta": "¿Cómo se relacionan el destino y la necesidad en el mito de Er de Platón?"}, {"nombre": "ἀκρασία", "pregunta": "¿Por qué hacemos algo aunque creamos que no deberíamos?"}, {"nombre": "παρρησία", "pregunta": "¿Qué se arriesga quien habla con franqueza ante el poder?"}, {"nombre": "εὐδαιμονία", "pregunta": "¿Qué perdemos al traducir eudaimonía simplemente como felicidad?"}, {"nombre": "κατάβασις", "pregunta": "¿Qué busca Odiseo cuando se acerca al mundo de los muertos?"}, {"nombre": "ψυχοπομπός", "pregunta": "¿Por qué Hermes acompaña a las almas en la Odisea?"}, {"nombre": "δαιμόνιον", "pregunta": "¿Qué era esa señal que, según Sócrates, lo frenaba?"}, {"nombre": "ἀναγνώρισις", "pregunta": "¿Qué cambia cuando Edipo descubre quién es?"}, {"nombre": "φάρμακον", "pregunta": "¿Cómo puede una palabra griega referirse a un remedio y a un veneno?"}, {"nombre": "κατάδεσμοι", "pregunta": "¿Qué le pedían a una tablilla de plomo quienes querían maldecir?"}, {"nombre": "κλήρωσις", "pregunta": "¿Por qué los atenienses sorteaban muchos de sus cargos?"}, {"nombre": "ὀστρακισμός", "pregunta": "¿Se podía expulsar a un ciudadano ateniense sin condenarlo por un delito?"}, {"nombre": "Devotio", "pregunta": "¿Por qué un general romano podía consagrarse a la muerte en batalla?"}, {"nombre": "Evocatio", "pregunta": "¿Por qué los romanos invitaban a una divinidad enemiga a cambiar de ciudad?"}];
+const secuenciaPreparada=[18,0];
+let numeroGiro=0;
+let temaElegido=null;
+    const canvas = document.getElementById("rueda");
+    const ctx = canvas.getContext("2d");
+    const boton = document.getElementById("girar");
+    const paso = 2 * Math.PI / temas.length;
+    const colores = ["#843f35", "#d7b87b", "#47625b", "#c28060", "#626681"];
+    let angulo = 0;
+    function dibujar() {
+      ctx.clearRect(0, 0, 1440, 1440);
+      ctx.save(); ctx.translate(720, 720); ctx.rotate(angulo);
+      temas.forEach((tema, i) => {
+        const inicio = -Math.PI / 2 + i * paso;
+        ctx.beginPath(); ctx.moveTo(0, 0);
+        ctx.arc(0, 0, 690, inicio, inicio + paso); ctx.closePath();
+        ctx.fillStyle = colores[i % colores.length]; ctx.fill();
+        ctx.strokeStyle = "#f6f1e8"; ctx.lineWidth = 2; ctx.stroke();
+        ctx.save(); ctx.rotate(inicio + paso / 2);
+        ctx.textAlign = "right"; ctx.textBaseline = "middle";
+        ctx.fillStyle = i % colores.length === 1 ? "#302b28" : "#fffaf1";
+        ctx.font = "27px Georgia";
+        ctx.fillText(tema.nombre, 652, 0, 490); ctx.restore();
+      });
+      ctx.beginPath(); ctx.arc(0, 0, 65, 0, 2 * Math.PI);
+      ctx.fillStyle = "#f6f1e8"; ctx.fill(); ctx.restore();
+    }
+    function girar() {
+      if (boton.disabled) return Promise.reject(new Error("La ruleta está girando."));
+      return new Promise(resolve => {
+      boton.disabled = true;
+      document.getElementById("tema").textContent = "";
+      document.getElementById("pregunta").textContent = "";
+      const elegido = numeroGiro < secuenciaPreparada.length
+        ? secuenciaPreparada[numeroGiro]
+        : (temaElegido === null ? Math.floor(Math.random() * temas.length) : temaElegido);
+      numeroGiro += 1;
+      const vuelta = 2 * Math.PI;
+      const destino = (vuelta - (elegido + 0.5) * paso) % vuelta;
+      const desde = angulo;
+      const avance = ((destino - desde) % vuelta + vuelta) % vuelta;
+      const hasta = desde + 6 * vuelta + avance;
+      const inicio = performance.now();
+      function animar(ahora) {
+        const t = Math.min((ahora - inicio) / (matchMedia("(prefers-reduced-motion: reduce)").matches ? 100 : 4400), 1);
+        angulo = desde + (hasta - desde) * (1 - Math.pow(1 - t, 4));
+        dibujar();
+        if (t < 1) { requestAnimationFrame(animar); }
+        else {
+          angulo = destino; dibujar();
+          document.getElementById("tema").textContent = temas[elegido].nombre;
+          document.getElementById("pregunta").textContent = temas[elegido].pregunta;
+          boton.disabled = false;
+          resolve(temas[elegido]);
+        }
+      }
+      requestAnimationFrame(animar);
+      });
+    }
+    boton.addEventListener("click", () => { girar().catch(console.error); });
+    dibujar();
+const panel=document.getElementById("ajustes");
+const selector=document.getElementById("seleccion");
+selector.add(new Option("Al azar", ""));
+temas.forEach((tema,i)=>selector.add(new Option(tema.nombre,String(i))));
+function abrirAjustes(){if(boton.disabled)return;selector.value=temaElegido===null?"":String(temaElegido);panel.showModal();}
+let toques=[];
+document.getElementById("titulo").addEventListener("click",()=>{const now=Date.now();toques=toques.filter(t=>now-t<1400);toques.push(now);if(toques.length>=3){toques=[];abrirAjustes();}});
+document.getElementById("config").addEventListener("submit",()=>{temaElegido=selector.value===""?null:Number(selector.value);numeroGiro=secuenciaPreparada.length;document.getElementById("tema").textContent="";document.getElementById("pregunta").textContent="";});
+if(document.modelContext?.registerTool){try{Promise.resolve(document.modelContext.registerTool({name:"girar_ruleta",title:"Girar la ruleta",description:"Gira la rueda usando su selección actual y devuelve el tema al terminar.",inputSchema:{type:"object",properties:{},additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute:async(input)=>{if(input&&Object.keys(input).length)throw new Error("No admite parámetros.");return await girar();}})).catch(console.error);}catch(error){console.error(error);}}
+</script></body></html>
